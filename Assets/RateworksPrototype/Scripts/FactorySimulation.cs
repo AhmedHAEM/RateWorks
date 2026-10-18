@@ -53,7 +53,7 @@ namespace RateworksPrototype
         public FactoryPart Add(PartKind kind, int x, int z, int direction)
         {
             if (!Inside(x, z) || cells[x, z] != null) return null;
-            var p = new FactoryPart { kind = kind, x = x, z = z, direction = direction % 4 };
+            var p = new FactoryPart { kind = kind, x = x, z = z, direction = ((direction % 4) + 4) % 4 };
             cells[x, z] = p; parts.Add(p); return p;
         }
         public bool Remove(int x, int z)
@@ -109,6 +109,7 @@ namespace RateworksPrototype
                     else p.status = p.output != Product.None ? "Blocked" : "Starved";
                 }
                 else if (p.kind == PartKind.Dispatch) p.status = "Receiving gears";
+                else if (p.kind == PartKind.Belt) p.status = p.output == Product.None ? "Starved" : p.age < .333f ? "Working" : "Blocked";
                 else if (p.output == Product.None) p.status = p.kind == PartKind.Source ? "Supplying plates" : "Starved";
             }
             while (deliveries.Count > 0 && Time - deliveries.Peek() >= Window - 0.0001f) deliveries.Dequeue();

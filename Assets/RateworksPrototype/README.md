@@ -1,25 +1,57 @@
-# Rateworks prototype reflection
+# Rateworks — Assignment 2 prototype
 
-This prototype focuses on one authored contract bay rather than a full game. The player is an engineer in a single industrial room. The brief asks for 1 gear per second for 20 seconds; the player can place and rotate conveyors and Basic Assemblers, inspect machine state, run the simulation, and see the final factory cost against a soft recommended budget. A Load example button makes the intended flow immediately demonstrable.
+One engineer, one industrial room, one contract: deliver **1 gear per second for 20 seconds**, with a soft cost target of **$2,800**. Build a layout, run it, inspect bottlenecks, stop to revise it, and complete the contract. Assignment 2 Part 3 supersedes the earlier assignment's camera restriction: this version uses **Cinemachine 3.1.7** and URP.
 
-The prototype follows the assignment constraints: the project uses URP, does not use Cinemachine, includes first-person movement, object rotation, simple scene setup, and reusable prefabs. The room contains 27 different imported prop models, a unique floor material, and 24 distinct prop materials created for the room. The industrial asset packs are used for the visual language while the authored teal input ports, orange dispatch ports, yellow grid, and white signage keep the contract readable.
+The room retains its existing object positions, rotations, and scales. Hitboxes were repaired without rearranging the level. The original 27 imported prop models, 24 distinct prop materials, floor material, and reusable production prefabs remain in use.
 
-## Controls
+## Quick demonstration
 
-WASD moves the engineer. Mouse look is active after starting the shift; Tab frees the cursor for UI. B selects a $50 belt, M selects a $1,000 assembler, R rotates the selected tool or part, left click places/selects, right click cancels, Delete removes a placed part and refunds its full cost, Space pauses, 1/2 select simulation speed, H shows a hint. The example button loads two parallel production rows.
+1. Open `Assets/RateworksPrototype/Scenes/RateworksPrototype.unity`, press Play, then **Start Shift**.
+2. Press **Tab**, choose **Load example**, then press **Enter** to run the two production rows.
+3. Try **V** to change camera and **F** to toggle the flashlight. Watch the five ceiling fixtures change between cool Build and warm Run lighting.
+4. Press **Space** to pause; the status light pulses amber. Resume to complete the contract, see the green status light and completion camera, then view the results.
+5. Choose **Keep optimizing** to return to Build with the same layout and cost. Stopping clears products, buffers, and verification timers.
+6. Find the **CEILING LIGHTS** switch on the rear wall, just right of the starting area. Walk close, face it, and press **E**. The ceiling lights and their glowing surfaces turn off together; **F** still controls the flashlight independently. Press **E** again to restore the room lights.
 
-The build buttons appear when the cursor is free (Tab). The inspector appears after selecting a part, and briefing/results screens hide the gameplay HUD. Hold H to read the hint while walking. Input/output labels are compact signs on the ports; conveyor meshes align with their transport arrows.
+## Controls and player actions
 
-## What is intentionally simplified
+| Control | Action |
+| --- | --- |
+| WASD / mouse | Walk / look around |
+| Tab | Toggle the cursor and build menu |
+| B / M | Logistics: select a $50 belt / Machines: select a $1,000 assembler |
+| Left click | Place the selected tool, or inspect a part when no tool is active |
+| Right click | Cancel the tool and inspect the pointed-at part |
+| R | Rotate the placement preview or selected part |
+| Delete / Backspace | Remove the selected part with a full refund |
+| Enter | Start Run / stop and return to Build |
+| Space | Pause or resume an active Run |
+| 0 / 1 / 2 | Set simulation speed to 0.5x / 1x / 2x |
+| V / F | Switch first-/third-person camera / toggle flashlight |
+| E near the wall switch | Toggle ceiling lights (within 2.7 m, facing it, with clear line of sight) |
+| H / Escape | Show a hint / cancel tool and release cursor |
 
-The production model uses deterministic item tokens and a small fixed grid. There is no power, mining, persistent money, level menu, or combat. The six-level plan from the design document is represented by one teaching contract so the assignment prototype remains a single-room demonstration. The five-second design window is represented by a stable six-second window in this prototype because two 2-second assemblers otherwise alternate between 0.8 and 1.2 items per second at the sample boundary; the contract and feedback remain the same.
+These include more than five player actions. Placement, rotation, deletion, and example loading work only in **Build**; pausing a Run does not enable editing. Fixed input/output ports cannot be removed. The placement preview shares the actual placement collision check, including the engineer's body. The inspector appears on selection; the build toolbar appears with Tab.
 
-## Assignment checklist
+## Camera and lighting requirements
 
-- Universal Render Pipeline: `RateworksPrototype/Scenes/RateworksPrototype.unity`.
-- No Cinemachine package or component is used.
-- Floor: `Materials/Floor - warm concrete.mat`.
-- 20+ different models: 27 imported industrial props plus authored machine, belt, source, dispatch, and product prefabs.
-- 20+ distinct object materials: 24 named `Prop 01` through `Prop 24`, plus authored machine, input, dispatch, product, safety, and preview materials.
-- Prefabs: `Prefabs/Conveyor.prefab`, `Basic Assembler.prefab`, `Plate input.prefab`, `Gear dispatch.prefab`, `Iron plate.prefab`, and `Gear product.prefab`.
-- Original pre-prototype scene snapshot: `Scenes/OriginalSceneSnapshot.unity`.
+Three Cinemachine cameras demonstrate distinct behaviors:
+
+- **First person:** follows the engineer's head/look target.
+- **Third person:** follows behind the engineer and adjusts for obstacles.
+- **Completion:** takes priority on contract success and blends into a fixed overview; returning to gameplay blends back.
+
+Four lighting behaviors make the assignment's minimum of three visible in play:
+
+- **Flashlight:** player-controlled spotlight toggled with F. A separate URP shadow mask excludes the engineer from this light's shadow casters, but keeps world shadows and the character's ceiling-light shadows.
+- **Ceiling switch:** E toggles five real lights positioned beneath the existing hanging fixtures, together with their emissive materials. The switch rocker and indicator show the state. Flashlight and status beacon remain independent; room-off persists across Build/Run changes, and Restart restores the lights.
+- **Work lights:** smoothly change color and intensity between cool Build lighting and warm Run lighting when switched on. Balanced ambient/daylight fill keeps machine faces and room corners readable without hiding the ceiling lights' on/off change.
+- **Status signal:** pulses amber for paused or underperforming production and turns green on contract completion.
+
+## Verification and scope
+
+Live checks passed for belt/assembler placement, rotation, removal, full refunds, editing restrictions during Run and paused Run, stop/reset behavior, player-edge overlap rejection, and the speed cycle. The example sustained 1 gear/s for 20 seconds and completed at approximately **28.7 simulation seconds**, including startup time.
+
+Lighting checks cover E-key activation, repeated on/off toggles, blocked/out-of-range/away-facing/menu interactions, room-off persistence through Run/Stop, independent flashlight use, and the warm Run/amber warning/green success states. The flashlight no longer projects the animated face/hat in third person. Existing room-model transforms remain unchanged.
+
+This is a small prototype, not the complete design document. It omits mining, power networks, multiple contracts, combat, and a persistent economy. Products use a deterministic grid simulation rather than rigidbody physics. Throughput is measured over six seconds so two synchronized two-second assemblers give stable feedback; a five-second window would alternate between 0.8 and 1.2 gear/s. Going over the recommended budget still permits completion; the lowest successful cost is saved locally.
